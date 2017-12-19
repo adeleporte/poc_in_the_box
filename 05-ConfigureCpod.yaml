@@ -40,6 +40,7 @@
       - syslinux
       - python-pip
       - python-pyvmomi
+      - ansible
   
   # Update DNS records
   - lineinfile:
