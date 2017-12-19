@@ -1,5 +1,5 @@
 ---
-- hosts: cpodrouter-ext
+- hosts: localhost
   gather_facts: False
   tasks:
 
@@ -51,11 +51,6 @@
       mode: 0755
     with_items:
     - "{{ files_to_copy.stdout_lines }}"
-
-- hosts: localhost
-  gather_facts: False
-  tasks:
-
 
   # Create the ressource pool
   - name: Add resource pool to vCenter

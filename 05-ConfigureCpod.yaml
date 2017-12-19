@@ -38,6 +38,8 @@
       - quagga
       - nfs-utils
       - syslinux
+      - python-pip
+      - python-pyvmomi
   
   # Update DNS records
   - lineinfile:
