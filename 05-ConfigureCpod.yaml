@@ -1,0 +1,94 @@
+---
+- hosts: cpodrouter-ext
+  gather_facts: False
+  tasks:
+
+  # Configure Backend interface
+  - name: write the interface config file
+    template: src=ifcfg-ens224.j2 dest=/etc/sysconfig/network-scripts/ifcfg-ens224
+    notify:
+    - restart network
+
+  # Disable firewall
+  - name: disable Firewall
+    service:
+      name: firewalld
+      state: stopped
+      enabled: no
+
+  # Configure EPEL repo
+  - name: install repo
+    yum:
+      name: '{{ item }}'
+      state: latest
+    with_items:
+      - epel-release
+
+  # Install cPod Services  
+  - name: install cPod services
+    yum:
+      name: '{{ item }}'
+      state: latest
+    with_items:
+      - nginx
+      - dnsmasq
+      - ntp
+      - xinetd
+      - tftp-server
+      - quagga
+      - nfs-utils
+      - syslinux
+  
+  # Update DNS records
+  - lineinfile:
+      path: /etc/hosts
+      line: '{{ item.ip }}    {{ item.name }}'
+    with_items:
+      - '{{ vEsx }}'
+      - '{{ vCenter }}'
+      - '{{ vrli }}'
+
+  # Configure DNSMASQ
+  - name: write the dnsmasq config file
+    template: src=dnsmasq.j2 dest=/etc/dnsmasq.conf
+    notify:
+    - restart dnsmasq
+
+  # Configure PXE
+  - name: copy the pxelinux file
+    copy: src=templates/pxelinux.0 dest=/var/lib/tftpboot/pxelinux.0
+
+  # Start cPod
+  - name: start cPod services
+    service:
+      name: '{{ item }}'
+      state: restarted
+      enabled: yes
+    with_items:
+      - nginx
+      - dnsmasq
+      - tftp
+      - ntpd
+      - nfs-mountd
+
+  # Configure NFS
+  - file:
+      path: /data/Datastore
+      state: directory
+  
+  #Configure NFS
+  - name: write the exports config file
+    template: src=exports.j2 dest=/etc/exports
+    notify:
+    - restart nfs      
+
+
+  handlers:
+    - name: restart dnsmasq
+      service: name=dnsmasq state=restarted
+    - name: restart network
+      service: name=network state=restarted
+    - name: restart nfs
+      service: name=nfs-mountd state=restarted
+
+  
