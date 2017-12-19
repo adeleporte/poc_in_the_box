@@ -1,5 +1,5 @@
 ---
-- hosts: cpodrouter-ext
+- hosts: localhost
   gather_facts: False
   tasks:
 
