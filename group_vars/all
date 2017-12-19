@@ -1,0 +1,158 @@
+########################################################################################################
+#                   _   _  _______   __  _____   ____   _____ _  __ _____   _ _ _                      #
+#                  | \ | |/ ____\ \ / / |  __ \ / __ \ / ____| |/ // ____| | | | |                     #
+#                  |  \| | (___  \ V /  | |__) | |  | | |    | ' /| (___   | | | |                     #
+#                  | . ` |\___ \  > <   |  _  /| |  | | |    |  <  \___ \  | | | |                     #
+#                  | |\  |____) |/ . \  | | \ \| |__| | |____| . \ ____) | |_|_|_|                     #
+#                  |_| \_|_____//_/ \_\ |_|  \_\\____/ \_____|_|\_\_____/  (_|_|_)                     #
+#                                                                                                      #
+########################################################################################################
+
+########################################################################################################
+# GENERAL SETTINGS
+########################################################################################################
+
+# ovftool
+ovftool_file_path: '/Applications/VMware OVF Tool'
+vcsa_image: '/Users/adeleporte/Documents/07\ -\ IMAGES/VMware-vCenter-Server-Appliance-6.5.0.5500-5318154_OVF10.ova'
+
+# OVA Downloads
+my_vmware:
+  username: '@@@@@@@@@@@@@'
+  password: '@@@@@@@@@@@@@'
+
+ova_list:
+  - { name: 'VMware-VCSA-all-6.5.0-7119157.iso', url: 'http://build-squid.eng.vmware.com/build/mts/release/bora-7119157/publish/vcsa-iso/VMware-VCSA-all-6.5.0-7119157.iso' }
+  - { name: 'VMware-vRealize-Log-Insight-4.5.1-6858700.ova', url: 'http://build-squid.eng.vmware.com/build/mts/release/bora-6858700/publish/VMware-vRealize-Log-Insight-4.5.1-6858700.ova' }
+  - { name: 'VMware-NSX-Manager-6.3.5-7119875.ova', url: 'http://build-squid.eng.vmware.com/build/mts/release/bora-7119875/publish/VMware-NSX-Manager-6.3.5-7119875.ova' }
+
+# Images
+images:
+  esx: images/VMware-VMvisor-Installer-6.5.0.update01-5969303.x86_64.iso
+
+########################################################################################################
+# VSPHERE SETTINGS
+########################################################################################################
+
+# PHYSICAL INFRASTRUCTURE
+physicalVcIPAddress: 'vcsa.cpod-ade-dc1.shwrfr.mooo.com'
+physicalVcUser: 'administrator@vsphere.local'
+physicalVcPassword: 'VMware1!'
+physicalDatastore: 'Datastore'
+physicalManagementDataCenterName: 'cPod-ADE-DC1'
+physicalClusterName: 'compute'
+
+
+# NESTED INFRASTRUCTURE
+# cPodRouter
+cPodRouterIP: '172.16.23.230'
+cPodRouterMask: '255.255.255.0'
+cPodDomain: 'pocinthebox.local'
+#cPodPSC: 'psc.cpod-ade-dc1.shwrfr.mooo.com'
+
+# Esx
+vEsx:
+  - { name: 'esx-01', ip: '172.16.23.201', mac: 'aa:aa:aa:aa:aa:01' }
+  #- { name: 'esx-02', ip: '172.16.23.202', mac: 'aa:aa:aa:aa:aa:02' }
+  #- { name: 'esx-03', ip: '172.16.23.203', mac: 'aa:aa:aa:aa:aa:03' }  
+
+# vCenter
+vCenter:
+  ip: '172.18.23.205'
+  name: 'vcsa'
+deployVcIPAddress: 'vcsa.cpod-ade-dc1.shwrfr.mooo.com'
+deployVcUser: 'administrator@vsphere.local'
+deployVcPassword: 'VMware1!'
+deployDatastore: 'Datastore'
+
+# Management POD
+deployManagementDataCenterName: 'cPod-ADE-DC1'
+deployManagementClusterName: 'mgmt'
+deployManagementVDSName: 'nsx-vds'
+deployManagementPGName: 'Management'
+deployManagementPGVlan: 0
+
+# Management ESXi
+managementEsx:
+  deployManagementEsx1: 'esx-01.cpod-ade-dc1.shwrfr.mooo.com'
+  deployManagementEsx2: 'esx-02.cpod-ade-dc1.shwrfr.mooo.com'
+  deployManagementEsx3: 'esx-03.cpod-ade-dc1.shwrfr.mooo.com'
+deployEsxUser: 'root'
+deployEsxPassword: 'VMware1!'
+
+# Compute ESXi
+computeEsx:
+  deployComputeEsx1: 'esx-04.cpod-ade-dc1.shwrfr.mooo.com'
+  deployComputeEsx2: 'esx-05.cpod-ade-dc1.shwrfr.mooo.com'
+
+# Compute POD
+deployComputeDataCenterName: 'cpod-ade-dc1'
+deployComputeClusterName: 'compute'
+deployComputeVDSName: 'compute-pod'
+deployComputePGVlan: 0
+
+
+########################################################################################################
+# NSX SETTINGS
+########################################################################################################
+
+# NSX Configuration
+NsxImageFile: 'VMware-NSX-Manager-6.3.4-6845891.ova'
+NsxImagePath: 'images/'
+NsxHostname: 'nsx.cpod-ade-dc1.shwrfr.mooo.com'
+NsxIP: '172.18.23.21'
+NsxLicenceKey: 'xxxxxxxxxxxxxxxxxxxx'
+
+nsxmanager_spec:
+  raml_file: '{{ playbook_dir }}/nsxraml/nsxvapi.raml'
+  host: 'nsx.cpod-ade-dc1.shwrfr.mooo.com'
+  user: 'admin'
+  password: 'VMware1!VMware1!'
+
+nsx_controllers:
+  ippool_start: '172.18.23.22'
+  ippool_stop: '172.18.23.24'
+  ippool_gateway: '172.18.23.1'
+  ippool_prefixlength: '24'
+  ippool_dns: '172.18.23.1'
+
+nsx_vteps:
+  ippool_start: '172.18.23.25'
+  ippool_stop: '172.18.23.28'
+  ippool_gateway: '172.18.23.1'
+  ippool_prefixlength: '24'
+  ippool_dns: '172.18.23.1'
+
+nsx_transportzone: 'TZ_DC1'
+
+ls:
+  transit_LS: 'Transit_LS_DC1'
+  web_ls: 'Web_LS_DC1'
+  app_ls: 'App_LS_DC1'
+  db_ls: 'Db_LS_DC1'
+
+dlr_interfaces:
+  - {name: 'Uplink vnic', ip: '192.168.16.241', prefix_len: 28, logical_switch: 'Transit_LS_DC1', iftype: 'uplink'}
+  - {name: 'WEB LIF', ip: '192.168.16.1', prefix_len: 28, logical_switch: 'Web_LS_DC1', iftype: 'internal'}
+  - {name: 'Appli LIF', ip: '192.168.16.17', prefix_len: 28, logical_switch: 'App_LS_DC1', iftype: 'internal'}
+  - {name: 'DB LIF', ip: '192.168.16.33', prefix_len: 28, logical_switch: 'Db_LS_DC1', iftype: 'internal'}
+dlr_protocol_address: '192.168.16.242'
+dlr_gateway: '192.168.16.254'
+
+edge_interfaces:
+  vnic0: {ip: '172.18.23.2', prefix_len: 24, portgroup_id: "{{ gather_moids_mgmt_pg_output.object_id }}", name: 'Uplink vnic', iftype: 'uplink'}
+  vnic1: {ip: '192.168.16.254', prefix_len: 28, logical_switch: 'Transit_LS_DC1', name: 'Internal vnic', iftype: 'internal'}
+edge_gateway: '172.18.23.1'
+
+as_bgp:
+  nsx: '65023'
+  physical: '65001'
+
+vrli:
+  vrliImageFile: 'VMware-vRealize-Log-Insight-4.5.0-5654101.ova'
+  vrliImagePath: 'images/'
+  name: 'vrli'
+  ip: '172.18.23.5'
+  user: 'admin'
+  password: 'VMware1!VMware1!'
+  deployment_option: 'xsmall'

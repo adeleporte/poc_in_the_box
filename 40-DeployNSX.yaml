@@ -1,0 +1,353 @@
+---
+- hosts: localhost
+  gather_facts: False
+  tasks:
+
+ # Deploy NSX Manager
+  - name: deploy nsx-man
+    nsx_deploy_ova:
+      ovftool_path: '{{ ovftool_file_path }}'
+      datacenter: '{{ deployManagementDataCenterName }}'
+      datastore: '{{ deployDatastore }}'
+      portgroup: '{{ deployManagementPGName }}'
+      cluster: '{{ deployManagementClusterName }}'
+      vmname: 'nsx-manager'
+      hostname: '{{ NsxHostname }}'
+      dns_server: '{{ cPodRouterIP }}'
+      ntp_server: '{{ cPodRouterIP }}'
+      dns_domain: '{{ cPodDomain }}'
+      gateway: '{{ cPodRouterIP }}'
+      ip_address: '{{ NsxIP }}'
+      netmask: '{{ cPodRouterMask }}'
+      admin_password: '{{ nsxmanager_spec.password }}'
+      enable_password: '{{ nsxmanager_spec.password }}'
+      path_to_ova: '{{ NsxImagePath }}'
+      ova_file: '{{ NsxImageFile }}'
+      vcenter: '{{ deployVcIPAddress }}'
+      vcenter_user: '{{ deployVcUser }}'
+      vcenter_passwd: '{{ deployVcPassword }}'
+    register: deploy_nsx_man
+
+  - name: NSX Manager SSO Registration
+    nsx_sso_registration:
+      state: present
+      nsxmanager_spec: '{{ nsxmanager_spec }}'
+      sso_lookupservice_url: 'lookupservice/sdk'
+      sso_lookupservice_port: 443
+      sso_lookupservice_server: '{{ cPodPSC }}'
+      sso_admin_username: '{{ deployVcUser }}'
+      sso_admin_password: '{{ deployVcPassword }}'
+      accept_all_certs: true
+    register: register_to_sso
+
+  - name: NSX Manager VC Registration
+    nsx_vc_registration:
+      nsxmanager_spec: '{{ nsxmanager_spec }}'
+      vcenter: '{{ deployVcIPAddress }}'
+      vcusername: '{{ deployVcUser }}'
+      vcpassword: '{{ deployVcPassword }}'
+      accept_all_certs: true
+    register: register_to_vc
+
+  - name: Apply NSX License
+    vcenter_nsx_license:
+      vcenter: '{{ deployVcIPAddress }}'
+      vcenter_user: '{{ deployVcUser }}'
+      vcenter_passwd: '{{ deployVcPassword }}'
+      license_key: '{{ NsxLicenceKey }}'
+    register: nsxlic
+    tags: nsx_license
+
+  - name: Gather Management Cluster MOIDs
+    vcenter_gather_moids:
+      hostname: '{{ deployVcIPAddress }}'
+      username: '{{ deployVcUser }}'
+      password: '{{ deployVcPassword }}'
+      datacenter_name: '{{ deployManagementDataCenterName }}'
+      cluster_name: '{{ deployManagementClusterName }}'
+      validate_certs: False
+    register: gather_moids_mgmt_cluster_output
+    tags: always
+
+  - name: Gather Compute Cluster MOIDs
+    vcenter_gather_moids:
+      hostname: '{{ deployVcIPAddress }}'
+      username: '{{ deployVcUser }}'
+      password: '{{ deployVcPassword }}'
+      datacenter_name: '{{ deployManagementDataCenterName }}'
+      cluster_name: '{{ deployComputeClusterName }}'
+      validate_certs: False
+    register: gather_moids_compute_cluster_output
+    tags: always
+
+  - name: Gather vCenter DVS MOIDs
+    vcenter_gather_moids:
+      hostname: '{{ deployVcIPAddress }}'
+      username: '{{ deployVcUser }}'
+      password: '{{ deployVcPassword }}'
+      datacenter_name: '{{ deployManagementDataCenterName }}'
+      dvs_name: '{{ deployManagementVDSName }}'
+      validate_certs: False
+    register: gather_moids_mgmt_dvs_output
+    tags: always
+
+  - name: Gather vCenter PG MOIDs
+    vcenter_gather_moids:
+      hostname: '{{ deployVcIPAddress }}'
+      username: '{{ deployVcUser }}'
+      password: '{{ deployVcPassword }}'
+      datacenter_name: '{{ deployManagementDataCenterName }}'
+      portgroup_name: '{{ deployManagementPGName }}'
+      validate_certs: False
+    register: gather_moids_mgmt_pg_output
+    tags: always
+
+  - name: Gather vCenter DataStore MOIDs
+    vcenter_gather_moids:
+      hostname: '{{ deployVcIPAddress }}'
+      username: '{{ deployVcUser }}'
+      password: '{{ deployVcPassword }}'
+      datacenter_name: '{{ deployManagementDataCenterName }}'
+      datastore_name: '{{ deployDatastore }}'
+      validate_certs: False
+    register: gather_moids_datastore_output
+    tags: always
+
+  - name: Controller IP Pool creation
+    nsx_ippool:
+      nsxmanager_spec: "{{ nsxmanager_spec }}"
+      state: present
+      name: 'ansible_controller_ip_pool'
+      start_ip: '{{ nsx_controllers.ippool_start }}'
+      end_ip: '{{ nsx_controllers.ippool_stop }}'
+      prefix_length: '{{ nsx_controllers.ippool_prefixlength }}'
+      gateway: '{{ nsx_controllers.ippool_gateway }}'
+      dns_server_1: '{{ nsx_controllers.ippool_dns }}'
+      dns_server_2: '{{ nsx_controllers.ippool_dns }}'
+    register: create_ip_pool
+
+  - name: Controller Cluster Creation
+    nsx_controllers:
+      nsxmanager_spec: "{{ nsxmanager_spec }}"
+      state: present
+      deploytype: 'lab'
+      #syslog_server: '172.17.100.129'
+      ippool_id: '{{ create_ip_pool.ippool_id }}'
+      resourcepool_moid: '{{ gather_moids_mgmt_cluster_output.object_id }}'
+      datastore_moid: '{{ gather_moids_datastore_output.object_id }}'
+      network_moid: '{{ gather_moids_mgmt_pg_output.object_id }}'
+      password: '{{ nsxmanager_spec.password }}'
+    register: create_controller_cluster
+    #no_log: True
+
+  - name: Management Cluster preparation
+    nsx_cluster_prep:
+      nsxmanager_spec: "{{ nsxmanager_spec }}"
+      state: present
+      cluster_moid: '{{ gather_moids_mgmt_cluster_output.object_id }}'
+    register: mgmt_cluster_prep
+
+  - name: Compute Cluster preparation
+    nsx_cluster_prep:
+      nsxmanager_spec: "{{ nsxmanager_spec }}"
+      state: present
+      cluster_moid: '{{ gather_moids_compute_cluster_output.object_id }}'
+    register: compute_cluster_prep
+
+  - name: VTEP IP Pool creation
+    nsx_ippool:
+      nsxmanager_spec: "{{ nsxmanager_spec }}"
+      state: present
+      name: 'ansible_vtep_ip_pool'
+      start_ip: '{{ nsx_vteps.ippool_start }}'
+      end_ip: '{{ nsx_vteps.ippool_stop }}'
+      prefix_length: '{{ nsx_vteps.ippool_prefixlength }}'
+      gateway: '{{ nsx_vteps.ippool_gateway}}'
+      dns_server_1: '{{ nsx_vteps.ippool_dns }}'
+      dns_server_2: '{{ nsx_vteps.ippool_dns }}'
+    register: ansible_vtep_ip_pool
+
+  - name: Cluster VXLAN Preparation
+    nsx_vxlan_prep:
+      nsxmanager_spec: "{{ nsxmanager_spec }}"
+      state: present
+      cluster_moid: '{{ gather_moids_compute_cluster_output.object_id }}'
+      dvs_moid: '{{ gather_moids_mgmt_dvs_output.object_id }}'
+      ippool_id: '{{ ansible_vtep_ip_pool.ippool_id }}'
+      #vlan_id: 100
+      #vmknic_count: 1
+      #teaming: 'ETHER_CHANNEL'
+      mtu: 1600
+    register: vxlan_prep
+
+  - name: Transport Zone Creation
+    nsx_transportzone:
+      nsxmanager_spec: "{{ nsxmanager_spec }}"
+      state: 'present'
+      name: '{{ nsx_transportzone }}'
+      controlplanemode: 'UNICAST_MODE'
+      description: '{{ nsx_transportzone }}'
+      cluster_moid_list:
+        - '{{ gather_moids_compute_cluster_output.object_id }}'
+    register: transport_zone
+
+  - name: Segment Pool Configuration
+    nsx_segment_id_pool:
+      nsxmanager_spec: "{{ nsxmanager_spec }}"
+      state: present
+      idpoolstart: 5000
+      idpoolend: 9999
+      mcast_enabled: false
+      #mcastpoolstart: '239.0.0.0'
+      #mcastpoolend: '239.255.255.255'
+    register: create_segment_pool
+
+  - name: logicalSwitch Operation
+    nsx_logical_switch:
+      nsxmanager_spec: "{{ nsxmanager_spec }}"
+      state: present
+      transportzone: '{{ nsx_transportzone }}'
+      name: '{{ item.value }}'
+      #controlplanemode: "UNICAST_MODE"
+      description: '{{ item.value }}'
+    with_dict: '{{ ls }}'
+
+  - name: DLR creation
+    nsx_dlr:
+      nsxmanager_spec: "{{ nsxmanager_spec }}"
+      state: present
+      name: 'ansibleDLR'
+      description: 'This DLR is created by nsxansible'
+      resourcepool_moid: "{{ gather_moids_compute_cluster_output.object_id }}"
+      datastore_moid: "{{ gather_moids_datastore_output.object_id }}"
+      datacenter_moid: "{{ gather_moids_compute_cluster_output.datacenter_moid }}"
+      mgmt_portgroup_moid: "{{ gather_moids_mgmt_pg_output.object_id }}"
+      interfaces: "{{ dlr_interfaces }}"      
+      #routes:
+      #  - {network: '10.11.25.0/24', next_hop: '172.16.1.1'}
+      default_gateway: '{{ dlr_gateway }}'
+      remote_access: 'true'
+      username: '{{ nsxmanager_spec.user }}'
+      password: '{{ nsxmanager_spec.password }}'
+      ha_enabled: 'false'
+    register: create_dlr
+    tags: edge
+    no_log: True
+
+  - name: ESG creation
+    nsx_edge_router:
+      nsxmanager_spec: "{{ nsxmanager_spec }}"
+      state: present
+      name: 'ansibleESG'
+      description: 'This ESG is created by nsxansible'
+      appliance_size: 'compact'
+      resourcepool_moid: "{{ gather_moids_compute_cluster_output.object_id }}"
+      datastore_moid: "{{ gather_moids_datastore_output.object_id }}"
+      datacenter_moid: "{{ gather_moids_compute_cluster_output.datacenter_moid }}"
+      interfaces: '{{ edge_interfaces }}'
+      default_gateway: '{{ edge_gateway }}'
+#      routes:
+#        - {network: '192.168.16.0/28', next_hop: '192.168.16.241'}
+#        - {network: '192.168.16.16/28', next_hop: '192.168.16.241'}
+#        - {network: '192.168.16.32/28', next_hop: '192.168.16.241'}
+      remote_access: 'true'
+      username: '{{ nsxmanager_spec.user }}'
+      password: '{{ nsxmanager_spec.password }}'
+      firewall: 'false'
+      ha_enabled: 'false'
+    register: create_esg
+    tags: edge
+#    no_log: True
+
+  - name: Get All Edge Devices
+    uri:
+      url: "https://{{ nsxmanager_spec.host }}/api/4.0/edges"
+      headers:
+        Accept: "application/json"
+      method: GET
+      validate_certs: no
+      user: "{{ nsxmanager_spec.user }}"
+      password: "{{ nsxmanager_spec.password }}"
+      force_basic_auth: yes
+      body_format: json
+    register: edges
+    tags: edge
+
+#  - debug:
+#      msg: "{{ edges.json.edgePage.data }}"
+
+  # Set Edge RouterID
+  - name: Set Edge RouterID
+    #ignore_errors: yes
+    uri:
+      url: "https://{{ nsxmanager_spec.host }}/api/4.0/edges/{{ item.objectId }}/routing/config/global"
+      method: PUT
+      user: "{{ nsxmanager_spec.user }}"
+      password: "{{ nsxmanager_spec.password }}"
+      headers:
+        Content-Type: "application/xml"
+      force_basic_auth: yes
+      status_code: 204
+      body: "{{ lookup('template', '{{ playbook_dir }}/templates/edge_RouterID.j2') }}"
+      validate_certs: no
+    with_items: "{{ edges.json.edgePage.data }}"
+    when:
+        (item.name == "ansibleESG")
+    tags: edge
+
+  # Configure BGP on EDGE
+  - name: Set BGP EDGE Configuration
+    #ignore_errors: yes
+    uri:
+      url: "https://{{ nsxmanager_spec.host }}/api/4.0/edges/{{ item.objectId }}/routing/config/bgp"
+      method: PUT
+      user: "{{ nsxmanager_spec.user }}"
+      password: "{{ nsxmanager_spec.password }}"
+      headers:
+        Content-Type: "application/xml"
+      force_basic_auth: yes
+      status_code: 204
+      body: "{{ lookup('template', '{{ playbook_dir }}/templates/edge_BGP.j2') }}"
+      validate_certs: no
+    with_items: "{{ edges.json.edgePage.data }}"
+    when:
+        (item.name == "ansibleESG")
+    tags: edge
+
+  # Set DLR RouterID
+  - name: Set DLR RouterID
+    #ignore_errors: yes
+    uri:
+      url: "https://{{ nsxmanager_spec.host }}/api/4.0/edges/{{ item.objectId }}/routing/config/global"
+      method: PUT
+      user: "{{ nsxmanager_spec.user }}"
+      password: "{{ nsxmanager_spec.password }}"
+      headers:
+        Content-Type: "application/xml"
+      force_basic_auth: yes
+      status_code: 204
+      body: "{{ lookup('template', '{{ playbook_dir }}/templates/dlr_RouterID.j2') }}"
+      validate_certs: no
+    with_items: "{{ edges.json.edgePage.data }}"
+    when:
+        (item.name == "ansibleDLR")
+    tags: edge
+
+  # Configure BGP on DLR
+  - name: Set BGP DLR Configuration
+    #ignore_errors: yes
+    uri:
+      url: "https://{{ nsxmanager_spec.host }}/api/4.0/edges/{{ item.objectId }}/routing/config/bgp"
+      method: PUT
+      user: "{{ nsxmanager_spec.user }}"
+      password: "{{ nsxmanager_spec.password }}"
+      headers:
+        Content-Type: "application/xml"
+      force_basic_auth: yes
+      status_code: 204
+      body: "{{ lookup('template', '{{ playbook_dir }}/templates/dlr_BGP.j2') }}"
+      validate_certs: no
+    with_items: "{{ edges.json.edgePage.data }}"
+    when:
+        (item.name == "ansibleDLR")
+    tags: edge

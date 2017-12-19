@@ -1,0 +1,26 @@
+<bgp>
+  <enabled>true</enabled>
+  <localAS>{{ as_bgp.nsx }}</localAS>
+  <localASNumber>{{ as_bgp.nsx }}</localASNumber>
+  <bgpNeighbours>
+  <bgpNeighbour>
+  <ipAddress>{{ cPodRouterIP }}</ipAddress>
+  <remoteAS>{{ as_bgp.physical }}</remoteAS>
+  <remoteASNumber>{{ as_bgp.physical }}</remoteASNumber>
+  <weight>60</weight>
+  <holdDownTimer>180</holdDownTimer>
+  <keepAliveTimer>60</keepAliveTimer>
+  </bgpNeighbour>
+  <bgpNeighbour>
+  <ipAddress>{{ dlr_protocol_address }}</ipAddress>
+  <remoteAS>{{ as_bgp.nsx }}</remoteAS>
+  <remoteASNumber>{{ as_bgp.nsx }}</remoteASNumber>
+  <weight>60</weight>
+  <holdDownTimer>180</holdDownTimer>
+  <keepAliveTimer>60</keepAliveTimer>
+  </bgpNeighbour>
+  </bgpNeighbours>
+  <redistribution>
+  <enabled>true</enabled>
+  </redistribution>
+</bgp>

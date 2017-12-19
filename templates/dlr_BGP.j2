@@ -1,0 +1,31 @@
+<bgp>
+  <enabled>true</enabled>
+  <localAS>{{ as_bgp.nsx }}</localAS>
+  <localASNumber>{{ as_bgp.nsx }}</localASNumber>
+  <bgpNeighbours>
+  <bgpNeighbour>
+  <ipAddress>{{ edge_interfaces.vnic1.ip }}</ipAddress>
+  <forwardingAddress>{{ dlr_interfaces[0].ip }}</forwardingAddress>
+  <protocolAddress>{{ dlr_protocol_address }}</protocolAddress>
+  <remoteAS>{{ as_bgp.nsx }}</remoteAS>
+  <remoteASNumber>{{ as_bgp.nsx }}</remoteASNumber>
+  <weight>60</weight>
+  <holdDownTimer>180</holdDownTimer>
+  <keepAliveTimer>60</keepAliveTimer>
+  </bgpNeighbour>
+  </bgpNeighbours>
+  <redistribution>
+  <enabled>true</enabled>
+  <rules>
+  <rule>
+  <from>
+  <ospf>false</ospf>
+  <bgp>false</bgp>
+  <static>false</static>
+  <connected>true</connected>
+  </from>
+  <action>permit</action>
+  </rule>
+  </rules>
+  </redistribution>
+</bgp>

@@ -1,0 +1,105 @@
+---
+- hosts: localhost
+  gather_facts: False
+  tasks:
+
+ # Deploy VRLI
+  - name: deploy vrli
+    vrli_deploy_ova:
+      ovftool_path: '{{ ovftool_file_path }}'
+      datacenter: '{{ deployManagementDataCenterName }}'
+      datastore: '{{ deployDatastore }}'
+      portgroup: '{{ deployManagementPGName }}'
+      cluster: '{{ deployManagementClusterName }}'
+      vmname: 'vRealize Log Insight'
+      hostname: '{{ vrli_spec.host }}'
+      dns_server: '{{ cPodRouterIP }}'
+      dns_domain: '{{ cPodDomain }}'
+      gateway: '{{ cPodRouterIP }}'
+      ip_address: '{{ vrli_spec.ip }}'
+      netmask: '{{ cPodRouterMask }}'
+      root_password: '{{ vrli_spec.password }}'
+      path_to_ova: '{{ vrli_spec.vrliImagePath }}'
+      ova_file: '{{ vrli_spec.vrliImageFile }}'
+      vcenter: '{{ deployVcIPAddress }}'
+      vcenter_user: '{{ deployVcUser }}'
+      vcenter_passwd: '{{ deployVcPassword }}'
+      deployment_option: '{{ vrli_spec.deployment_option }}'
+    tags: syslog
+
+  - name: Get All Edge Devices
+    uri:
+      url: "https://{{ nsxmanager_spec.host }}/api/4.0/edges"
+      headers:
+        Accept: "application/json"
+      method: GET
+      validate_certs: no
+      user: "{{ nsxmanager_spec.user }}"
+      password: "{{ nsxmanager_spec.password }}"
+      force_basic_auth: yes
+      body_format: json
+    register: edges
+    tags: syslog
+
+  # Set Syslog
+  - name: Set Edge Syslog
+    uri:
+      url: "https://{{ nsxmanager_spec.host }}/api/4.0/edges/{{ item.objectId }}/syslog/config"
+      method: PUT
+      user: "{{ nsxmanager_spec.user }}"
+      password: "{{ nsxmanager_spec.password }}"
+      headers:
+        Content-Type: "application/xml"
+      force_basic_auth: yes
+      status_code: 204
+      body: "{{ lookup('template', 'templates/edge_syslog.j2') }}"
+      validate_certs: no
+    with_items: "{{ edges.json.edgePage.data }}"
+    tags: syslog
+
+# Get All Controllers
+  - name: Get All Controller Devices
+    uri:
+      url: "https://{{ nsxmanager_spec.host }}/api/2.0/vdn/controller"
+      headers:
+        Accept: "application/json"
+      method: GET
+      validate_certs: no
+      user: "{{ nsxmanager_spec.user }}"
+      password: "{{ nsxmanager_spec.password }}"
+      force_basic_auth: yes
+      body_format: json
+    register: controllers
+    tags: syslog
+
+  # Set Controller Syslog
+  - name: Set Controller Syslog
+    uri:
+      url: "https://{{ nsxmanager_spec.host }}/api/2.0/vdn/controller/{{ item.id }}/syslog"
+      method: POST
+      user: "{{ nsxmanager_spec.user }}"
+      password: "{{ nsxmanager_spec.password }}"
+      headers:
+        Content-Type: "application/xml"
+      force_basic_auth: yes
+      status_code: 200,500
+      body: "{{ lookup('template', 'templates/controller_syslog.j2') }}"
+      validate_certs: no
+    with_items: "{{ controllers.json.controllers}}"
+    tags: syslog
+
+  # Set Manager Syslog
+  - name: Set Manager Syslog
+    uri:
+      url: "https://{{ nsxmanager_spec.host }}/api/1.0/appliance-management/system/syslogserver"
+      method: PUT
+      user: "{{ nsxmanager_spec.user }}"
+      password: "{{ nsxmanager_spec.password }}"
+      headers:
+        Content-Type: "application/xml"
+      force_basic_auth: yes
+      status_code: 200
+      body: "{{ lookup('template', 'templates/nsxmanager_syslog.j2') }}"
+      validate_certs: no
+    tags: syslog
+    

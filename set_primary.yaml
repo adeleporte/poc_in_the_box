@@ -1,0 +1,38 @@
+---
+- hosts: localhost
+  gather_facts: False
+  tasks:
+
+  # Set Primary
+  - name: Set NSX Manager as Primary
+    ignore_errors: yes
+    uri:
+      url: "https://{{ nsxmanager_spec.host }}/api/2.0/universalsync/configuration/role"
+      method: POST
+      user: "{{ nsxmanager_spec.user }}"
+      password: "{{ nsxmanager_spec.password }}"
+      body: "action=set-as-primary"
+      force_basic_auth: yes
+      status_code: 200
+      validate_certs: no
+      #body_format: json
+
+  - name: Get NSX Thumbprint
+    uri:
+      url: "https://{{ nsxmanager_spec.host }}/api/1.0/appliance-management/certificatemanager/certificates/nsx"
+      method: GET
+      user: "{{ nsxmanager_spec.user }}"
+      password: "{{ nsxmanager_spec.password }}"
+      force_basic_auth: yes
+      status_code: 200
+      validate_certs: no
+      return_content: yes
+      headers:
+        Accept: "application/json"
+    register: nsxthumbprint
+
+  - name: debug
+    debug:
+      msg: "{{ (nsxthumbprint.content|from_json)|json_query(query) }}"
+    vars:
+      query: '[0].{*}'

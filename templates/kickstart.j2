@@ -1,0 +1,34 @@
+accepteula
+install --firstdisk --overwritevmfs
+rootpw {{ deployVcPassword }}
+reboot
+
+network --bootproto=static --addvmportgroup=true --device=vmnic0 --ip={{ item.ip }} --netmask={{ cPodRouterMask }} --gateway={{ cPodRouterIP }} --nameserver={{ cPodRouterIP }} --hostname="{{ item.name }}.{{ cPodDomain }}"
+
+%firstboot --interpreter=busybox
+
+vim-cmd hostsvc/enable_ssh
+vim-cmd hostsvc/start_ssh
+vim-cmd hostsvc/enable_esx_shell
+vim-cmd hostsvc/start_esx_shell
+esxcli system settings advanced set -o /UserVars/SuppressShellWarning -i 1
+esxcli system settings advanced set -o /UserVars/ESXiShellInteractiveTimeOut -i 3600
+vim-cmd hostsvc/datastore/rename datastore1 "$(hostname -s)-local-storage-1"
+esxcli storage nmp satp set --satp VMW_SATP_SYMM --default-psp VMW_PSP_RR
+esxcli storage nmp satp set --satp VMW_SATP_DEFAULT_AA --default-psp VMW_PSP_RR
+esxcli storage nfs add --host {{ cPodRouterIP }} --share /data/Datastore --volume-name {{ deployDatastore }}
+
+cat > /etc/ntp.conf << __NTP_CONFIG__
+restrict default kod nomodify notrap noquerynopeer
+restrict 127.0.0.1
+server {{ cPodRouterIP }}
+__NTP_CONFIG__
+/sbin/chkconfig ntpd on
+
+esxcli system maintenanceMode set -e true
+
+cp /var/log/hostd.log "/vmfs/volumes/$(hostname -s)-local-storage-1/firstboot-hostd.log"
+cp /var/log/esxi_install.log "/vmfs/volumes/$(hostname -s)-local-storage-1/firstboot-esxi_install.log"
+
+esxcli system shutdown reboot -d 60 -r "rebooting after host configurations"
+

@@ -1,0 +1,6 @@
+DEFAULT install
+NOHALT 1
+LABEL install
+ KERNEL /mboot.c32
+ APPEND -c pxelinux.cfg/{{ item.name }}.cfg
+ IPAPPEND 2

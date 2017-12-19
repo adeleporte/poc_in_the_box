@@ -1,0 +1,101 @@
+---
+- hosts: cpodrouter-ext
+  gather_facts: False
+  tasks:
+
+  # Prepare KickStart Files
+  - file:
+      path: /usr/share/nginx/html/esxi_ksFiles
+      state: directory
+
+  - template:
+      src: templates/kickstart.j2
+      dest: /usr/share/nginx/html/esxi_ksFiles/{{ item.name }}.cfg
+    with_items: '{{ vEsx }}'
+
+  # Prepare PXE boot.cfg Files
+  - file:
+      path: /var/lib/tftpboot/pxelinux.cfg
+      state: directory
+
+  - template:
+      src: templates/pxe.j2
+      dest: /var/lib/tftpboot/pxelinux.cfg/01-{{ item.mac | regex_replace(':', '-') }}
+    with_items: '{{ vEsx }}'
+
+  # Prepare PXE boot.cfg Files
+  - template:
+      src: templates/boot.j2
+      dest: /var/lib/tftpboot/pxelinux.cfg/{{ item.name }}.cfg
+    with_items: '{{ vEsx }}'
+
+  # Prepare ESX files
+  - name: Mount Esx ISO
+    mount:
+      path: '/mnt/cdrom'
+      src: '/root/PocInTheBox/{{ images.esx }}'
+      fstype: iso9660
+      opts: ro
+      state: mounted
+
+  - name: get file names to copy
+    command: "find /mnt/cdrom -type f"
+    register: files_to_copy
+
+  - copy:
+      remote_src: True
+      src: "{{ item }}"
+      dest: /var/lib/tftpboot
+      owner: nobody
+      group: nobody
+      mode: 0755
+    with_items:
+    - "{{ files_to_copy.stdout_lines }}"
+
+- hosts: localhost
+  gather_facts: False
+  tasks:
+
+
+  # Create the ressource pool
+  - name: Add resource pool to vCenter
+    vmware_resource_pool:
+      validate_certs: no
+      hostname: '{{ physicalVcIPAddress }}'
+      username: '{{ physicalVcUser }}'
+      password: '{{ physicalVcPassword }}'
+      datacenter: '{{ physicalManagementDataCenterName }}'
+      cluster: '{{ physicalClusterName }}'
+      resource_pool: "PocInTheBox"
+      state: present
+
+  # Create vESXs
+  - name: Create vESX
+    vmware_guest:
+      validate_certs: no
+      hostname: '{{ deployVcIPAddress }}'
+      username: '{{ deployVcUser }}'
+      password: '{{ physicalVcPassword }}'
+      datacenter: '{{ physicalManagementDataCenterName }}'
+      cluster: '{{ physicalClusterName }}'
+      folder: "{{ physicalManagementDataCenterName }}/vm"
+      name: '{{ item.name }}'
+      state: poweredon
+      resource_pool: "PocInTheBox"
+      guest_id: centos64Guest
+      hardware:
+        memory_mb: 4096
+        num_cpus: 2
+        scsi: paravirtual
+      disk:
+      - size_gb: 8
+        type: thin
+        datastore: '{{ physicalDatastore }}'
+      networks:
+      - name: Backend
+        mac: '{{ item.mac }}'
+    with_items: '{{ vEsx }}'
+    
+
+
+

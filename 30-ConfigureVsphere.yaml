@@ -1,0 +1,132 @@
+---
+- hosts: localhost
+  gather_facts: False
+  tasks:
+
+  # Deploy the Cluster
+  - name: Create Datacenter
+    vmware_datacenter:
+      hostname: '{{ deployVcIPAddress }}'
+      username: '{{ deployVcUser }}'
+      password: '{{ deployVcPassword }}'
+      datacenter_name: '{{ deployManagementDataCenterName }}'
+      validate_certs: false
+      state: present
+
+  # Deploy the Management Cluster
+  - name: Create Management Cluster
+    vmware_cluster:
+      hostname: '{{ deployVcIPAddress }}'
+      username: '{{ deployVcUser }}'
+      password: '{{ deployVcPassword }}'
+      datacenter_name: '{{ deployManagementDataCenterName }}'
+      cluster_name: '{{ deployManagementClusterName }}'
+      enable_ha: false
+      enable_drs: true
+      enable_vsan: false
+      validate_certs: false
+      state: present
+
+  # Add the first host to the Management Cluster
+  - name: Add Management Hosts
+    vmware_host:
+      hostname: '{{ deployVcIPAddress }}'
+      username: '{{ deployVcUser }}'
+      password: '{{ deployVcPassword }}'
+      datacenter_name: '{{ deployManagementDataCenterName }}'
+      cluster_name: '{{ deployManagementClusterName }}'
+      esxi_hostname: '{{ item.value }}'
+      esxi_username: '{{ deployEsxUser }}'
+      esxi_password: '{{ deployEsxPassword }}'
+      validate_certs: false
+      state: present
+    with_dict: '{{ managementEsx }}'
+
+  # Create the Management VDS
+  - name: Create Management VDS
+    vmware_dvswitch:
+      hostname: '{{ deployVcIPAddress }}'
+      username: '{{ deployVcUser }}'
+      password: '{{ deployVcPassword }}'
+      datacenter_name: '{{ deployManagementDataCenterName }}'
+      switch_name: '{{ deployManagementVDSName }}'
+      mtu: 1600
+      uplink_quantity: 2
+      discovery_proto: lldp
+      discovery_operation: both
+      validate_certs: false
+      state: present
+
+  # Create the Management portgroup
+  - name: Create Management portgroup on the VDS
+    vmware_dvs_portgroup:
+      hostname: '{{ deployVcIPAddress }}'
+      username: '{{ deployVcUser }}'
+      password: '{{ deployVcPassword }}'
+      portgroup_name: '{{ deployManagementPGName }}'
+      switch_name: '{{ deployManagementVDSName }}'
+      vlan_id: '{{ deployManagementPGVlan }}'
+      num_ports: 120
+      portgroup_type: earlyBinding
+      validate_certs: false
+      state: present
+
+  # Add host1 to the Management VDS
+  - name: Add Management Hosts to dVS
+    vmware_dvs_host:
+      hostname: '{{ deployVcIPAddress }}'
+      username: '{{ deployVcUser }}'
+      password: '{{ deployVcPassword }}'
+      esxi_hostname: '{{ item.value }}'
+      switch_name: '{{ deployManagementVDSName }}'
+      vmnics:
+        - vmnic1
+      validate_certs: false
+      state: present
+    with_dict: '{{ managementEsx }}'
+
+
+  # Deploy the Compute Cluster
+  - name: Create Compute Cluster
+    vmware_cluster:
+      hostname: '{{ deployVcIPAddress }}'
+      username: '{{ deployVcUser }}'
+      password: '{{ deployVcPassword }}'
+      datacenter_name: '{{ deployComputeDataCenterName }}'
+      cluster_name: '{{ deployComputeClusterName }}'
+      enable_ha: false
+      enable_drs: true
+      enable_vsan: false
+      validate_certs: false
+      state: present
+
+  # Add hosts to the Compute Cluster
+  - name: Add Compute Hosts to Cluster
+    vmware_host:
+      hostname: '{{ deployVcIPAddress }}'
+      username: '{{ deployVcUser }}'
+      password: '{{ deployVcPassword }}'
+      datacenter_name: '{{ deployComputeDataCenterName }}'
+      cluster_name: '{{ deployComputeClusterName }}'
+      esxi_hostname: '{{ item.value }}'
+      esxi_username: '{{ deployEsxUser }}'
+      esxi_password: '{{ deployEsxPassword }}'
+      validate_certs: false
+      state: present
+    with_dict: '{{ computeEsx }}'
+
+
+  # Add host1 to the Management VDS
+  - name: Add Compute Hosts to dVS
+    vmware_dvs_host:
+      hostname: '{{ deployVcIPAddress }}'
+      username: '{{ deployVcUser }}'
+      password: '{{ deployVcPassword }}'
+      esxi_hostname: '{{ item.value }}'
+      switch_name: '{{ deployManagementVDSName }}'
+      vmnics:
+        - vmnic1
+      validate_certs: false
+      state: present
+    with_dict: '{{ computeEsx }}'
+

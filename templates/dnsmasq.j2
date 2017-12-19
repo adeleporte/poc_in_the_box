@@ -1,0 +1,15 @@
+listen-address={{ cPodRouterIP }}
+interface=ens224
+bind-interfaces
+expand-hosts
+bogus-priv
+domain={{ cPodDomain }}
+local=/{{ cPodDomain }}/
+server=8.8.8.8
+no-dhcp-interface=lo,ens112
+dhcp-range=172.16.23.100,172.16.23.199,255.255.255.0,12h
+dhcp-option=option:router,{{ cPodRouterIP }}
+dhcp-option=option:ntp-server,{{ cPodRouterIP }}
+dhcp-option=option:domain-search,{{ cPodDomain }}
+dhcp-boot=pxelinux.0
+tftp-root=/var/lib/tftpboot

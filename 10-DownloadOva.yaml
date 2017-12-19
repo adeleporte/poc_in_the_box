@@ -1,0 +1,14 @@
+---
+- hosts: localhost
+  gather_facts: False
+  tasks:
+
+  - name: Download MyVmware images
+    get_url:
+      url: '{{ item.url }}'
+      dest: 'images/{{ item.name }}'
+      #url_username: '{{ my_vmware.username }}'
+      #url_password: '{{ my_vmware.password }}'
+      validate_certs: False
+    with_items: '{{ ova_list }}'
+
