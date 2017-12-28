@@ -12,9 +12,11 @@
 # GENERAL SETTINGS
 ########################################################################################################
 
-# ovftool
+# Paths
 ovftool_file_path: '/Applications/VMware OVF Tool'
-vcsa_image: '/Users/adeleporte/Documents/07\ -\ IMAGES/VMware-vCenter-Server-Appliance-6.5.0.5500-5318154_OVF10.ova'
+vcsa_deploy_tool_file_path: 'vcsa-cli-installer/lin64'
+vcsa_template_file: '/tmp/vcsa.json'
+#vcsa_image: '/Users/adeleporte/Documents/07\ -\ IMAGES/VMware-vCenter-Server-Appliance-6.5.0.5500-5318154_OVF10.ova'
 
 # OVA Downloads
 my_vmware:
@@ -29,6 +31,7 @@ ova_list:
 # Images
 images:
   esx: images/VMware-VMvisor-Installer-6.5.0.update01-5969303.x86_64.iso
+  vcsa: images/VMware-VCSA-all-6.5.0-5318154.iso
 
 ########################################################################################################
 # VSPHERE SETTINGS
@@ -58,7 +61,7 @@ vEsx:
 
 # vCenter
 vCenter:
-  ip: '172.18.23.205'
+  ip: '172.16.23.205'
   name: 'vcsa'
 deployVcIPAddress: 'vcsa.cpod-ade-dc1.shwrfr.mooo.com'
 deployVcUser: 'administrator@vsphere.local'

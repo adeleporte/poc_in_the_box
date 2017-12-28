@@ -3,37 +3,36 @@
     "__comments": "Sample template to deploy a vCenter Server Appliance with an embedded Platform Services Controller on an ESXi host.",
     "new.vcsa": {
         "esxi": {
-            "hostname": "esx-01.cpod-ade-dc1.shwrfr.mooo.com",
+            "hostname": "{{ vEsx[0].name }}",
             "username": "root",
-            "password": "VMware1!",
+            "password": "{{ deployVcPassword }}",
             "deployment.network": "VM Network",
             "datastore": "Datastore"
         },
         "appliance": {
             "thin.disk.mode": true,
             "deployment.option": "management-small",
-            "name": "vcsa_dc1"
+            "name": "vcsa"
         },
         "network": {
             "ip.family": "ipv4",
             "mode": "static",
-            "ip": "172.18.23.20",
+            "ip": "{{ vCenter.ip }}",
             "dns.servers": [
-                "172.18.23.1"
+                "{{ cPodRouterIP }}"
             ],
             "prefix": "24",
-            "gateway": "172.18.23.1",
-            "system.name": "vcsa.cpod-ade-dc1.shwrfr.mooo.com"
+            "gateway": "{{ cPodRouterIP }}",
+            "system.name": "{{ vCenter.name }}.{{ cPodDomain }}"
         },
         "os": {
-            "password": "VMware1!",
+            "password": "{{ deployVcPassword }}",
             "ssh.enable": true
         },
         "sso": {
-            "password": "VMware1!",
+            "password": "{{ deployVcPassword }}",
             "domain-name": "vsphere.local",
-            "platform.services.controller": "psc.cpod-ade-dc1.shwrfr.mooo.com",
-            "sso.port": 443
+            "site-name": "Default-site"
         }
     },
     "ceip": {

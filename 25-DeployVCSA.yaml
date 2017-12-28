@@ -1,0 +1,25 @@
+---
+- hosts: cpodrouter-ext
+  gather_facts: False
+  tasks:
+
+
+  # Mount VCSA Image
+  - name: Mount VCSA ISO
+    mount:
+      path: '/mnt/vcsa'
+      src: '/root/PocInTheBox/{{ images.vcsa }}'
+      fstype: iso9660
+      opts: ro
+      state: mounted
+
+  # Copy the tmp template file
+  - template:
+      src: templates/vcsa.j2
+      dest: '{{ vcsa_template_file }}'
+
+  # Deploy VCSA
+  - vcsa_deploy_ova:
+      vcsa_deploy_tool_path: '/mnt/vcsa/{{ vcsa_deploy_tool_file_path }}'
+      template_path: '{{ vcsa_template_file }}'
+
