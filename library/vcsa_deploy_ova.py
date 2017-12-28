@@ -81,9 +81,9 @@ def main():
     if module.check_mode:
         module.exit_json(changed=True)
 
-    vcsa_deploy = '{}/vcsa_deploy'.format(module.params['vcsa_deploy_tool_path'])
+    vcsa_deploy = '{}/vcsa-deploy'.format(module.params['vcsa_deploy_tool_path'])
     vcsa_template = '{}'.format(module.params['template'])
-    ova_tool_result = module.run_command([vcsa_deploy, '--accept-eula', '--acknowledge-ceip', '--no-esx-ssl-verify', vcsa_template)
+    ova_tool_result = module.run_command(vcsa_deploy, '--accept-eula', '--acknowledge-ceip', '--no-esx-ssl-verify', vcsa_template)
 
     if ova_tool_result[0] != 0:
         module.fail_json(msg='Failed to deploy OVA, error message from vcsa_deploy is: {}'.format(ova_tool_result[1]))

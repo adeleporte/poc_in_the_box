@@ -22,4 +22,5 @@
   - vcsa_deploy_ova:
       vcsa_deploy_tool_path: '/mnt/vcsa/{{ vcsa_deploy_tool_file_path }}'
       template_path: '{{ vcsa_template_file }}'
+      vm_name: 'vcsa'
 
