@@ -30,37 +30,6 @@ import ssl
 import atexit
 
 
-def find_virtual_machine(content, searched_vm_name):
-    virtual_machines = get_all_objs(content, [vim.VirtualMachine])
-    for vm in virtual_machines:
-        if vm.name == searched_vm_name:
-            return vm
-    return None
-
-
-def get_all_objs(content, vimtype):
-    obj = {}
-    container = content.viewManager.CreateContainerView(content.rootFolder, vimtype, True)
-    for managed_object_ref in container.view:
-        obj.update({managed_object_ref: managed_object_ref.name})
-    return obj
-
-
-def connect_to_api(vchost, vc_user, vc_pwd):
-    if hasattr(ssl, 'SSLContext'):
-        context = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
-        context.verify_mode = ssl.CERT_NONE
-    else:
-        context = None
-    if context:
-        service_instance = connect.SmartConnect(host=vchost, user=vc_user, pwd=vc_pwd, sslContext=context)
-    else:
-        service_instance = connect.SmartConnect(host=vchost, user=vc_user, pwd=vc_pwd)
-
-    atexit.register(connect.Disconnect, service_instance)
-
-    return service_instance.RetrieveContent()
-
 
 def main():
     module = AnsibleModule(
@@ -72,16 +41,7 @@ def main():
         supports_check_mode=True
     )
 
-    vcsa_appliance_vm = find_virtual_machine(content, module.params['vmname'])
-
-    if vcsa_appliance_vm:
-        #module.fail_json(msg='A VM with the name {} was already present')
-        module.exit_json(changed=False, vcsa_appliance_vm=str(vcsa_appliance_vm))
-
-    if module.check_mode:
-        module.exit_json(changed=True)
-
-    vcsa_deploy = '{}/vcsa-deploy'.format(module.params['vcsa_deploy_tool_path'])
+    vcsa_deploy = '{}/vcsa-deploy install'.format(module.params['vcsa_deploy_tool_path'])
     vcsa_template = '{}'.format(module.params['template'])
     ova_tool_result = module.run_command(vcsa_deploy, '--accept-eula', '--acknowledge-ceip', '--no-esx-ssl-verify', vcsa_template)
 
