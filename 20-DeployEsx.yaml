@@ -79,7 +79,7 @@
       resource_pool: "PocInTheBox"
       guest_id: centos64Guest
       hardware:
-        memory_mb: 4096
+        memory_mb: 12096
         num_cpus: 2
         scsi: paravirtual
       disk:
