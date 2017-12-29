@@ -50,6 +50,10 @@
       - '{{ vCenter }}'
       - '{{ vrli }}'
 
+  # Change DNS Client
+  - name: write the resolv config file
+    template: src=resolv.j2 dest=/etc/resolv.conf
+
   # Configure DNSMASQ
   - name: write the dnsmasq config file
     template: src=dnsmasq.j2 dest=/etc/dnsmasq.conf
