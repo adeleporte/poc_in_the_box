@@ -11,6 +11,9 @@ vim-cmd hostsvc/enable_ssh
 vim-cmd hostsvc/start_ssh
 vim-cmd hostsvc/enable_esx_shell
 vim-cmd hostsvc/start_esx_shell
+
+esxcli system maintenanceMode set -e true
+
 esxcli system settings advanced set -o /UserVars/SuppressShellWarning -i 1
 esxcli system settings advanced set -o /UserVars/ESXiShellInteractiveTimeOut -i 3600
 vim-cmd hostsvc/datastore/rename datastore1 "$(hostname -s)-local-storage-1"
@@ -25,7 +28,7 @@ server {{ cPodRouterIP }}
 __NTP_CONFIG__
 /sbin/chkconfig ntpd on
 
-esxcli system maintenanceMode set -e true
+esxcli system maintenanceMode set -e false
 
 cp /var/log/hostd.log "/vmfs/volumes/$(hostname -s)-local-storage-1/firstboot-hostd.log"
 cp /var/log/esxi_install.log "/vmfs/volumes/$(hostname -s)-local-storage-1/firstboot-esxi_install.log"
