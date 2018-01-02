@@ -1,6 +1,6 @@
 accepteula
 install --firstdisk --overwritevmfs
-rootpw {{ deployVcPassword }}
+rootpw {{ nestedVcPassword }}
 reboot
 
 network --bootproto=static --addvmportgroup=true --device=vmnic0 --ip={{ item.ip }} --netmask={{ cPodRouterMask }} --gateway={{ cPodRouterIP }} --nameserver={{ cPodRouterIP }} --hostname="{{ item.name }}.{{ cPodDomain }}"
@@ -19,7 +19,7 @@ esxcli system settings advanced set -o /UserVars/ESXiShellInteractiveTimeOut -i 
 vim-cmd hostsvc/datastore/rename datastore1 "$(hostname -s)-local-storage-1"
 esxcli storage nmp satp set --satp VMW_SATP_SYMM --default-psp VMW_PSP_RR
 esxcli storage nmp satp set --satp VMW_SATP_DEFAULT_AA --default-psp VMW_PSP_RR
-esxcli storage nfs add --host {{ cPodRouterIP }} --share /data/Datastore --volume-name {{ deployDatastore }}
+esxcli storage nfs add --host {{ cPodRouterIP }} --share /data/Datastore --volume-name {{ nestedDatastore }}
 
 cat > /etc/ntp.conf << __NTP_CONFIG__
 restrict default kod nomodify notrap noquerynopeer

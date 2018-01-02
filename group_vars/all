@@ -12,11 +12,24 @@
 # GENERAL SETTINGS
 ########################################################################################################
 
+# PHYSICAL INFRASTRUCTURE
+physicalVcIPAddress: 'vcsa.cpod-ade-dc1.shwrfr.mooo.com'
+physicalVcUser: 'administrator@vsphere.local'
+physicalVcPassword: 'VMware1!'
+physicalDatastore: 'Datastore'
+physicalManagementDataCenterName: 'cPod-ADE-DC1'
+physicalClusterName: 'compute'
+
+# Images
+images:
+  esx: images/VMware-VMvisor-Installer-6.5.0.update01-5969303.x86_64.iso
+  vcsa: images/VMware-VCSA-all-6.5.0-5318154.iso
+  vrli: images/VMware-vRealize-Log-Insight-4.5.0-5654101.ova
+
 # Paths
 ovftool_file_path: '/Applications/VMware OVF Tool'
 vcsa_deploy_tool_file_path: 'vcsa-cli-installer/lin64'
 vcsa_template_file: '/tmp/vcsa.json'
-#vcsa_image: '/Users/adeleporte/Documents/07\ -\ IMAGES/VMware-vCenter-Server-Appliance-6.5.0.5500-5318154_OVF10.ova'
 
 # OVA Downloads
 my_vmware:
@@ -28,30 +41,16 @@ ova_list:
   - { name: 'VMware-vRealize-Log-Insight-4.5.1-6858700.ova', url: 'http://build-squid.eng.vmware.com/build/mts/release/bora-6858700/publish/VMware-vRealize-Log-Insight-4.5.1-6858700.ova' }
   - { name: 'VMware-NSX-Manager-6.3.5-7119875.ova', url: 'http://build-squid.eng.vmware.com/build/mts/release/bora-7119875/publish/VMware-NSX-Manager-6.3.5-7119875.ova' }
 
-# Images
-images:
-  esx: images/VMware-VMvisor-Installer-6.5.0.update01-5969303.x86_64.iso
-  vcsa: images/VMware-VCSA-all-6.5.0-5318154.iso
 
 ########################################################################################################
 # VSPHERE SETTINGS
 ########################################################################################################
-
-# PHYSICAL INFRASTRUCTURE
-physicalVcIPAddress: 'vcsa.cpod-ade-dc1.shwrfr.mooo.com'
-physicalVcUser: 'administrator@vsphere.local'
-physicalVcPassword: 'VMware1!'
-physicalDatastore: 'Datastore'
-physicalManagementDataCenterName: 'cPod-ADE-DC1'
-physicalClusterName: 'compute'
-
 
 # NESTED INFRASTRUCTURE
 # cPodRouter
 cPodRouterIP: '172.16.23.230'
 cPodRouterMask: '255.255.255.0'
 cPodDomain: 'pocinthebox.local'
-#cPodPSC: 'psc.cpod-ade-dc1.shwrfr.mooo.com'
 
 # Esx
 vEsx:
@@ -63,34 +62,34 @@ vEsx:
 vCenter:
   ip: '172.16.23.205'
   name: 'vcsa'
-deployVcIPAddress: 'vcsa.pocinthebox.local'
-deployVcUser: 'administrator@vsphere.local'
-deployVcPassword: 'VMware1!'
-deployDatastore: 'Datastore'
+nestedVcIPAddress: 'vcsa.pocinthebox.local'
+nestedVcUser: 'administrator@vsphere.local'
+nestedVcPassword: 'VMware1!'
+nestedDatastore: 'Datastore'
 
 # Management POD
-deployManagementDataCenterName: 'PocInTheBox'
-deployManagementClusterName: 'mgmt'
-deployManagementVDSName: 'nsx-vds'
-deployManagementPGName: 'Management'
-deployManagementPGVlan: 0
+nestedManagementDataCenterName: 'PocInTheBox'
+nestedManagementClusterName: 'mgmt'
+nestedManagementVDSName: 'nsx-vds'
+nestedManagementPGName: 'Management'
+nestedManagementPGVlan: 0
 
 # Management ESXi
 managementEsx:
-  deployManagementEsx1: 'esx-01.pocinthebox.local'
-deployEsxUser: 'root'
-deployEsxPassword: 'VMware1!'
+  nestedManagementEsx1: 'esx-01.pocinthebox.local'
+nestedEsxUser: 'root'
+nestedEsxPassword: 'VMware1!'
 
 # Compute ESXi
 computeEsx:
-  deployComputeEsx1: 'esx-02.pocinthebox.local'
-  deployComputeEsx2: 'esx-03.pocinthebox.local'
+  nestedComputeEsx1: 'esx-02.pocinthebox.local'
+  nestedComputeEsx2: 'esx-03.pocinthebox.local'
 
 # Compute POD
-deployComputeDataCenterName: 'PocInTheBox'
-deployComputeClusterName: 'compute'
-deployComputeVDSName: 'compute-pod'
-deployComputePGVlan: 0
+nestedComputeDataCenterName: 'PocInTheBox'
+nestedComputeClusterName: 'compute'
+nestedComputeVDSName: 'compute-pod'
+nestedComputePGVlan: 0
 
 
 ########################################################################################################
@@ -101,7 +100,7 @@ deployComputePGVlan: 0
 NsxImageFile: 'VMware-NSX-Manager-6.3.4-6845891.ova'
 NsxImagePath: 'images/'
 NsxHostname: 'nsx.cpod-ade-dc1.shwrfr.mooo.com'
-NsxIP: '172.18.23.21'
+NsxIP: '172.16.23.21'
 NsxLicenceKey: 'xxxxxxxxxxxxxxxxxxxx'
 
 nsxmanager_spec:
@@ -150,10 +149,8 @@ as_bgp:
   physical: '65001'
 
 vrli:
-  vrliImageFile: 'VMware-vRealize-Log-Insight-4.5.0-5654101.ova'
-  vrliImagePath: 'images/'
   name: 'vrli'
-  ip: '172.18.23.5'
+  ip: '172.16.23.5'
   user: 'admin'
   password: 'VMware1!VMware1!'
   deployment_option: 'xsmall'

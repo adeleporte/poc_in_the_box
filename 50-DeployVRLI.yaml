@@ -7,10 +7,10 @@
   - name: deploy vrli
     vrli_deploy_ova:
       ovftool_path: '{{ ovftool_file_path }}'
-      datacenter: '{{ deployManagementDataCenterName }}'
-      datastore: '{{ deployDatastore }}'
-      portgroup: '{{ deployManagementPGName }}'
-      cluster: '{{ deployManagementClusterName }}'
+      datacenter: '{{ nestedManagementDataCenterName }}'
+      datastore: '{{ nestedDatastore }}'
+      portgroup: '{{ nestedManagementPGName }}'
+      cluster: '{{ nestedManagementClusterName }}'
       vmname: 'vRealize Log Insight'
       hostname: '{{ vrli_spec.host }}'
       dns_server: '{{ cPodRouterIP }}'
@@ -19,11 +19,10 @@
       ip_address: '{{ vrli_spec.ip }}'
       netmask: '{{ cPodRouterMask }}'
       root_password: '{{ vrli_spec.password }}'
-      path_to_ova: '{{ vrli_spec.vrliImagePath }}'
-      ova_file: '{{ vrli_spec.vrliImageFile }}'
-      vcenter: '{{ deployVcIPAddress }}'
-      vcenter_user: '{{ deployVcUser }}'
-      vcenter_passwd: '{{ deployVcPassword }}'
+      ova_file: '{{ images.vrli }}'
+      vcenter: '{{ nestedVcIPAddress }}'
+      vcenter_user: '{{ nestedVcUser }}'
+      vcenter_passwd: '{{ nestedVcPassword }}'
       deployment_option: '{{ vrli_spec.deployment_option }}'
     tags: syslog
 

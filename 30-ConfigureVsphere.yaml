@@ -6,21 +6,21 @@
   # Deploy the Cluster
   - name: Create Datacenter
     vmware_datacenter:
-      hostname: '{{ deployVcIPAddress }}'
-      username: '{{ deployVcUser }}'
-      password: '{{ deployVcPassword }}'
-      datacenter_name: '{{ deployManagementDataCenterName }}'
+      hostname: '{{ nestedVcIPAddress }}'
+      username: '{{ nestedVcUser }}'
+      password: '{{ nestedVcPassword }}'
+      datacenter_name: '{{ nestedManagementDataCenterName }}'
       validate_certs: false
       state: present
 
   # Deploy the Management Cluster
   - name: Create Management Cluster
     vmware_cluster:
-      hostname: '{{ deployVcIPAddress }}'
-      username: '{{ deployVcUser }}'
-      password: '{{ deployVcPassword }}'
-      datacenter_name: '{{ deployManagementDataCenterName }}'
-      cluster_name: '{{ deployManagementClusterName }}'
+      hostname: '{{ nestedVcIPAddress }}'
+      username: '{{ nestedVcUser }}'
+      password: '{{ nestedVcPassword }}'
+      datacenter_name: '{{ nestedManagementDataCenterName }}'
+      cluster_name: '{{ nestedManagementClusterName }}'
       enable_ha: false
       enable_drs: true
       enable_vsan: false
@@ -30,14 +30,14 @@
   # Add the first host to the Management Cluster
   - name: Add Management Hosts
     vmware_host:
-      hostname: '{{ deployVcIPAddress }}'
-      username: '{{ deployVcUser }}'
-      password: '{{ deployVcPassword }}'
-      datacenter_name: '{{ deployManagementDataCenterName }}'
-      cluster_name: '{{ deployManagementClusterName }}'
+      hostname: '{{ nestedVcIPAddress }}'
+      username: '{{ nestedVcUser }}'
+      password: '{{ nestedVcPassword }}'
+      datacenter_name: '{{ nestedManagementDataCenterName }}'
+      cluster_name: '{{ nestedManagementClusterName }}'
       esxi_hostname: '{{ item.value }}'
-      esxi_username: '{{ deployEsxUser }}'
-      esxi_password: '{{ deployEsxPassword }}'
+      esxi_username: '{{ nestedEsxUser }}'
+      esxi_password: '{{ nestedEsxPassword }}'
       validate_certs: false
       state: present
     with_dict: '{{ managementEsx }}'
@@ -45,11 +45,11 @@
   # Create the Management VDS
   - name: Create Management VDS
     vmware_dvswitch:
-      hostname: '{{ deployVcIPAddress }}'
-      username: '{{ deployVcUser }}'
-      password: '{{ deployVcPassword }}'
-      datacenter_name: '{{ deployManagementDataCenterName }}'
-      switch_name: '{{ deployManagementVDSName }}'
+      hostname: '{{ nestedVcIPAddress }}'
+      username: '{{ nestedVcUser }}'
+      password: '{{ nestedVcPassword }}'
+      datacenter_name: '{{ nestedManagementDataCenterName }}'
+      switch_name: '{{ nestedManagementVDSName }}'
       mtu: 1600
       uplink_quantity: 2
       discovery_proto: lldp
@@ -60,12 +60,12 @@
   # Create the Management portgroup
   - name: Create Management portgroup on the VDS
     vmware_dvs_portgroup:
-      hostname: '{{ deployVcIPAddress }}'
-      username: '{{ deployVcUser }}'
-      password: '{{ deployVcPassword }}'
-      portgroup_name: '{{ deployManagementPGName }}'
-      switch_name: '{{ deployManagementVDSName }}'
-      vlan_id: '{{ deployManagementPGVlan }}'
+      hostname: '{{ nestedVcIPAddress }}'
+      username: '{{ nestedVcUser }}'
+      password: '{{ nestedVcPassword }}'
+      portgroup_name: '{{ nestedManagementPGName }}'
+      switch_name: '{{ nestedManagementVDSName }}'
+      vlan_id: '{{ nestedManagementPGVlan }}'
       num_ports: 120
       portgroup_type: earlyBinding
       validate_certs: false
@@ -74,11 +74,11 @@
   # Add host1 to the Management VDS
   - name: Add Management Hosts to dVS
     vmware_dvs_host:
-      hostname: '{{ deployVcIPAddress }}'
-      username: '{{ deployVcUser }}'
-      password: '{{ deployVcPassword }}'
+      hostname: '{{ nestedVcIPAddress }}'
+      username: '{{ nestedVcUser }}'
+      password: '{{ nestedVcPassword }}'
       esxi_hostname: '{{ item.value }}'
-      switch_name: '{{ deployManagementVDSName }}'
+      switch_name: '{{ nestedManagementVDSName }}'
       vmnics:
         - vmnic1
       validate_certs: false
@@ -89,11 +89,11 @@
   # Deploy the Compute Cluster
   - name: Create Compute Cluster
     vmware_cluster:
-      hostname: '{{ deployVcIPAddress }}'
-      username: '{{ deployVcUser }}'
-      password: '{{ deployVcPassword }}'
-      datacenter_name: '{{ deployComputeDataCenterName }}'
-      cluster_name: '{{ deployComputeClusterName }}'
+      hostname: '{{ nestedVcIPAddress }}'
+      username: '{{ nestedVcUser }}'
+      password: '{{ nestedVcPassword }}'
+      datacenter_name: '{{ nestedComputeDataCenterName }}'
+      cluster_name: '{{ nestedComputeClusterName }}'
       enable_ha: false
       enable_drs: true
       enable_vsan: false
@@ -103,14 +103,14 @@
   # Add hosts to the Compute Cluster
   - name: Add Compute Hosts to Cluster
     vmware_host:
-      hostname: '{{ deployVcIPAddress }}'
-      username: '{{ deployVcUser }}'
-      password: '{{ deployVcPassword }}'
-      datacenter_name: '{{ deployComputeDataCenterName }}'
-      cluster_name: '{{ deployComputeClusterName }}'
+      hostname: '{{ nestedVcIPAddress }}'
+      username: '{{ nestedVcUser }}'
+      password: '{{ nestedVcPassword }}'
+      datacenter_name: '{{ nestedComputeDataCenterName }}'
+      cluster_name: '{{ nestedComputeClusterName }}'
       esxi_hostname: '{{ item.value }}'
-      esxi_username: '{{ deployEsxUser }}'
-      esxi_password: '{{ deployEsxPassword }}'
+      esxi_username: '{{ nestedEsxUser }}'
+      esxi_password: '{{ nestedEsxPassword }}'
       validate_certs: false
       state: present
     with_dict: '{{ computeEsx }}'
@@ -119,11 +119,11 @@
   # Add host1 to the Management VDS
   - name: Add Compute Hosts to dVS
     vmware_dvs_host:
-      hostname: '{{ deployVcIPAddress }}'
-      username: '{{ deployVcUser }}'
-      password: '{{ deployVcPassword }}'
+      hostname: '{{ nestedVcIPAddress }}'
+      username: '{{ nestedVcUser }}'
+      password: '{{ nestedVcPassword }}'
       esxi_hostname: '{{ item.value }}'
-      switch_name: '{{ deployManagementVDSName }}'
+      switch_name: '{{ nestedManagementVDSName }}'
       vmnics:
         - vmnic1
       validate_certs: false

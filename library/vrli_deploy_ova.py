@@ -79,7 +79,6 @@ def main():
             netmask=dict(required=True, type='str'),
             root_password=dict(required=True, type='str', no_log=True),
             deployment_option=dict(type='str', default='xsmall'),
-            path_to_ova=dict(required=True, type='str'),
             ova_file=dict(required=True, type='str'),
             disk_mode=dict(default='thin'),
             vcenter=dict(required=True, type='str'),
@@ -107,7 +106,7 @@ def main():
         module.exit_json(changed=True)
 
     ovftool_exec = '{}/ovftool'.format(module.params['ovftool_path'])
-    ova_file = '{}/{}'.format(module.params['path_to_ova'], module.params['ova_file'])
+    ova_file = '{}/{}'.format(module.params['ova_file'])
     vi_string = 'vi://{}:{}@{}/{}/host/{}/'.format(module.params['vcenter_user'],
                                                    module.params['vcenter_passwd'], module.params['vcenter'],
                                                    module.params['datacenter'], module.params['cluster'])

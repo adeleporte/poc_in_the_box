@@ -5,7 +5,7 @@
         "esxi": {
             "hostname": "{{ vEsx[0].name }}",
             "username": "root",
-            "password": "{{ deployVcPassword }}",
+            "password": "{{ nestedVcPassword }}",
             "deployment.network": "VM Network",
             "datastore": "Datastore"
         },
@@ -26,11 +26,11 @@
             "system.name": "{{ vCenter.name }}.{{ cPodDomain }}"
         },
         "os": {
-            "password": "{{ deployVcPassword }}",
+            "password": "{{ nestedVcPassword }}",
             "ssh.enable": true
         },
         "sso": {
-            "password": "{{ deployVcPassword }}",
+            "password": "{{ nestedVcPassword }}",
             "domain-name": "vsphere.local",
             "site-name": "Default-site"
         }
