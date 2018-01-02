@@ -90,7 +90,6 @@
       - name: Backend
         mac: '{{ item.mac }}'
       - name: Backend
-        mac: '{{ item.mac }}'
     with_items: '{{ vEsx }}'
     
 
