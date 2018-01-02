@@ -56,20 +56,20 @@ cPodDomain: 'pocinthebox.local'
 # Esx
 vEsx:
   - { name: 'esx-01', ip: '172.16.23.201', mac: 'aa:aa:aa:aa:aa:01' }
-  #- { name: 'esx-02', ip: '172.16.23.202', mac: 'aa:aa:aa:aa:aa:02' }
-  #- { name: 'esx-03', ip: '172.16.23.203', mac: 'aa:aa:aa:aa:aa:03' }  
+  - { name: 'esx-02', ip: '172.16.23.202', mac: 'aa:aa:aa:aa:aa:02' }
+  - { name: 'esx-03', ip: '172.16.23.203', mac: 'aa:aa:aa:aa:aa:03' }  
 
 # vCenter
 vCenter:
   ip: '172.16.23.205'
   name: 'vcsa'
-deployVcIPAddress: 'vcsa.cpod-ade-dc1.shwrfr.mooo.com'
+deployVcIPAddress: 'vcsa.pocinthebox.local'
 deployVcUser: 'administrator@vsphere.local'
 deployVcPassword: 'VMware1!'
 deployDatastore: 'Datastore'
 
 # Management POD
-deployManagementDataCenterName: 'cPod-ADE-DC1'
+deployManagementDataCenterName: 'PocInTheBox'
 deployManagementClusterName: 'mgmt'
 deployManagementVDSName: 'nsx-vds'
 deployManagementPGName: 'Management'
@@ -77,19 +77,17 @@ deployManagementPGVlan: 0
 
 # Management ESXi
 managementEsx:
-  deployManagementEsx1: 'esx-01.cpod-ade-dc1.shwrfr.mooo.com'
-  deployManagementEsx2: 'esx-02.cpod-ade-dc1.shwrfr.mooo.com'
-  deployManagementEsx3: 'esx-03.cpod-ade-dc1.shwrfr.mooo.com'
+  deployManagementEsx1: 'esx-01.pocinthebox.local'
 deployEsxUser: 'root'
 deployEsxPassword: 'VMware1!'
 
 # Compute ESXi
 computeEsx:
-  deployComputeEsx1: 'esx-04.cpod-ade-dc1.shwrfr.mooo.com'
-  deployComputeEsx2: 'esx-05.cpod-ade-dc1.shwrfr.mooo.com'
+  deployComputeEsx1: 'esx-02.pocinthebox.local'
+  deployComputeEsx2: 'esx-03.pocinthebox.local'
 
 # Compute POD
-deployComputeDataCenterName: 'cpod-ade-dc1'
+deployComputeDataCenterName: 'PocInTheBox'
 deployComputeClusterName: 'compute'
 deployComputeVDSName: 'compute-pod'
 deployComputePGVlan: 0
