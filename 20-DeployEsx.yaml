@@ -68,8 +68,8 @@
   - name: Create vESX
     vmware_guest:
       validate_certs: no
-      hostname: '{{ deployVcIPAddress }}'
-      username: '{{ deployVcUser }}'
+      hostname: '{{ physicalVcIPAddress }}'
+      username: '{{ physicalVcUser }}'
       password: '{{ physicalVcPassword }}'
       datacenter: '{{ physicalManagementDataCenterName }}'
       cluster: '{{ physicalClusterName }}'
