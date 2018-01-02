@@ -26,6 +26,7 @@ images:
   vcsa: images/VMware-VCSA-all-6.5.0-5318154.iso
   vrli: images/VMware-vRealize-Log-Insight-4.5.0-5654101.ova
 
+
 # Paths
 ovftool_file_path: '/Applications/VMware OVF Tool'
 vcsa_deploy_tool_file_path: 'vcsa-cli-installer/lin64'
