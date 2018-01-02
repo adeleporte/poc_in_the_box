@@ -91,7 +91,13 @@
         mac: '{{ item.mac }}'
       - name: Backend
     with_items: '{{ vEsx }}'
-    
 
+  # Wait for vESXs  
+  - name: Wait for vESXs
+    wait_for:
+      port: 22
+      host: '{{ item.ip }}'
+      delay: 10
+    with_items: '{{ vEsx }}'
 
 
