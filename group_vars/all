@@ -24,8 +24,7 @@ physicalClusterName: 'compute'
 images:
   esx: images/VMware-VMvisor-Installer-6.5.0.update01-5969303.x86_64.iso
   vcsa: images/VMware-VCSA-all-6.5.0-5318154.iso
-  vrli: images/VMware-vRealize-Log-Insight-4.5.0-5654101.ova
-
+  vrli: images/VMware-vRealize-Log-Insight-4.5.0-5654101.ova
 
 # Paths
 ovftool_file_path: '/Applications/VMware OVF Tool'
