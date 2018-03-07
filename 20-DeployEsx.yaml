@@ -33,7 +33,7 @@
   - name: Mount Esx ISO
     mount:
       path: '/mnt/cdrom'
-      src: '/root/PocInTheBox/{{ images.esx }}'
+      src: '/root/poc_in_the_box/{{ images.esx }}'
       fstype: iso9660
       opts: ro
       state: mounted
