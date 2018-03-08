@@ -8,7 +8,7 @@
   - name: Mount VCSA ISO
     mount:
       path: '/mnt/vcsa'
-      src: '/root/PocInTheBox/{{ images.vcsa }}'
+      src: '/root/poc_in_the_box/{{ images.vcsa }}'
       fstype: iso9660
       opts: ro
       state: mounted
